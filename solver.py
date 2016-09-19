@@ -52,14 +52,19 @@ class Solver:
     return new_board
 
   def GetNextMove(self, board):
-
     p = self.BuildProbBoard(board)
 
     minMoveScore = 1
     minMove = [0, 0]
     isopen = False
+    bombs_found = 0
+    covered_cells = 0
     for i in range(board.GetWidth()):
       for j in range(board.GetHeight()):
+        if p[i][j] == 1:
+          bombs_found += 1
+        if board.GetCell(i, j) == -1:
+          covered_cells += 1
         if p[i][j] != -1 and board.GetCell(i, j) == -1:
           isopen = True
           if p[i][j] < minMoveScore:
@@ -68,7 +73,7 @@ class Solver:
 
     if not isopen:
       minMove = [board.GetWidth()/2, board.GetHeight()/2]
-    return minMove
+    return (minMove, bombs_found, covered_cells)
 
   def Display(self, fullboard, pboard):
     spacerString = '-'*4*fullboard.GetWidth()

@@ -10,41 +10,60 @@ import board
 import solver
 import cProfile
 import re
+from bs4 import BeautifulSoup
 from selenium import webdriver
 
 class TAS:
     def __init__(self):
         #select the headless web browser (whatever is installed)
-        driver = webdriver.Firefox()
+        self.driver = webdriver.Firefox()
 
-        driver.get('http://minesweeperonline.com/#')
-        
-        self.solve(driver)
-        #cProfile.runctx("self.solve(driver)", globals(),locals())#
+        self.driver.get('http://minesweeperonline.com/#')
 
-    def solve(self, driver):
-        s = solver.Solver()
-        html = driver.page_source
-        soup = BeautifulSoup(html, "html.parser")
-        clickBoard = self.load_board(driver, soup)
-        while(True):
-            b = self.extract_board(driver, cells)
+    def Run(self, profile = False):
+        if profile:
+            cProfile.runctx("self.Solve(self.driver)", globals(),locals())#
+        else:
+            self.Solve(self.driver)
 
-            move = s.GetNextMove(b)
-            print "Making move: " + str(move)
-            self.make_move(driver, [move[0]+1, move[1]+1])
+    def Solve(self, driver):
+        self.solver = solver.Solver()
+        (self.height, self.width) = self.GetBoardSize()
 
-    def load_board(self, driver, soup):
+        while True:
+            (b, win, lose) = self.ReadBoard()
+
+            if win:
+                print "--- WE WON! ---"
+                break
+            
+            if lose:
+                print "--- WE LOST :( ---"
+                self.driver.find_element_by_id("face").click()
+            (move, bombs, covered) = self.solver.GetNextMove(b)
+            self.make_move(move)
+            covered -= 1
+            if covered == bombs:
+                print "DONE!"
+                break
+
+            # raw_input()
+
+    def GetBoardSize(self):
         cells = []
 
         rows = 0
         cols = 0
         row = 1
         column = 1
+
+        html = self.driver.page_source
+        soup = BeautifulSoup(html, "html.parser")
+
         while True:
             name = str(row)+"_"+str(column)
             cell_soup = soup.find("div", {"id":name})
-            if cell_soup == None:
+            if cell_soup == None or ('style' in cell_soup.attrs and 'display: none;' not in cell_soup.attrs['style']):
                 if column == 1:
                     rows = row-1
                     break
@@ -56,33 +75,39 @@ class TAS:
                     cells.append(cell_soup)
                 column += 1
 
-        clickBoard = []
-        for i in range(rows):
-            row = []
-            for j in range(cols):
-                row.append(cells[i*rows+j])
-            clickBoard.append(row)
-        return (clickBoard, rows, cols)
+        rows -= 1
+        cols -= 1
 
-    def extract_board(self, clickBoard, rows, cols):
-        for i in range(rows):
-            for j in range(cols):
-                cell_soup = clickBoard[i][j]
+        mines_hundreds = int(soup.find("div", {"id":"mines_hundreds"}).attrs['class'][0][4:])
+        mines_tens = int(soup.find("div", {"id":"mines_tens"}).attrs['class'][0][4:])
+        mines_ones = int(soup.find("div", {"id":"mines_ones"}).attrs['class'][0][4:])
+        num_bombs = mines_hundreds*100 + mines_tens*10 + mines_ones
+        return (rows, cols, num_bombs)
 
-        cell_type = cell_soup['class'][-1]
-        b = board.Board(cols, rows)
+    def ReadBoard(self):
+        b = board.Board(self.width, self.height)
+
+        html = self.driver.page_source
+        soup = BeautifulSoup(html, "html.parser")
+
+        cells = soup.findAll("div", {"class": u'square'})
         for cell in cells:
-            col = cell[0]
-            row = cell[1]
-            t = cell[2]
-            if "open" in t:
-                b.SetCell(col, row, int(t[4:]))
+            (row, col) = cell.attrs['id'].split("_")
+            if int(row) <= self.height and int(col) <= self.width:
+                t = cell.attrs['class'][1]
+                if "open" in t:
+                    b.SetCell(int(col)-1, int(row)-1, int(t[4:]))
 
-        return b
+        faceClass = soup.find("div", {"id": u'face'}).attrs['class']
 
+        didWin = "facewin" in faceClass
+        didLose = "facedead" in faceClass
 
-    def make_move(self, driver, move):
-        clickID = str(move[1])+"_"+str(move[0])
-        print "Clicking on " + clickID
-        driver.find_element_by_id(clickID).click()
-TAS()
+        return (b, didWin, didLose)
+
+    def make_move(self, move):
+        clickID = str(move[1]+1)+"_"+str(move[0]+1)
+        self.driver.find_element_by_id(clickID).click()
+
+t = TAS()
+t.Run()
