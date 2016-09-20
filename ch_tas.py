@@ -34,14 +34,14 @@ class TAS:
     def Solve(self, driver):
         self.solver = solver.Solver()
         self.parser = etree.HTMLParser()
-        (self.height, self.width, unused_bombs) = self.GetBoardSize()
+        (self.height, self.width, unused_bombs) = self.GetBoardSize())
         self.b = board.Board(self.width, self.height)
         
 
         while True:
             print 'reading board'
             print (datetime.now())
-            (win, lose) = self.ReadBoard(self.parser)
+            (win, lose) = self.ReadBoard()
             print (datetime.now())
 
             if win:
@@ -68,8 +68,6 @@ class TAS:
                 break
 
     def GetBoardSize(self):
-
-
         cells = []
 
         rows = 0
@@ -78,8 +76,7 @@ class TAS:
         column = 1
 
         html = self.driver.page_source
-        parser = etree.HTMLParser()
-        tree   = etree.parse(StringIO(html), parser)
+        tree   = etree.parse(StringIO(html), self.parser)
 
         #lxml+xpath
         while True:
@@ -107,7 +104,7 @@ class TAS:
 
     def ReadBoard(self, parser):
         html = self.driver.page_source
-        tree   = etree.parse(StringIO(html), parser)
+        tree   = etree.parse(StringIO(html), self.parser)
 
         #lxml+xpath
         cells = tree.xpath('.//div[contains(@class, "square") and not(contains(@style,"display: none;"))]')
