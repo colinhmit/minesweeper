@@ -10,6 +10,8 @@ while True:
   move = raw_input("Enter a move as (column, row): ")
   if move == "auto":
     while True:
+      #(move, bombs, covered) = self.solver.GetNextMove(b)
+      #result = m.Probe(move[0], move[1])
       [column, row] = s.GetNextMove(m.board)
       result = m.Probe(column, row)
       if result == 1:
