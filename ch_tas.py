@@ -34,7 +34,7 @@ class TAS:
     def Solve(self, driver):
         self.solver = solver.Solver()
         self.parser = etree.HTMLParser()
-        (self.height, self.width, unused_bombs) = self.GetBoardSize())
+        (self.height, self.width, unused_bombs) = self.GetBoardSize()
         self.b = board.Board(self.width, self.height)
         
 
@@ -102,7 +102,7 @@ class TAS:
 
         return (rows, cols, num_bombs)
 
-    def ReadBoard(self, parser):
+    def ReadBoard(self):
         html = self.driver.page_source
         tree   = etree.parse(StringIO(html), self.parser)
 
