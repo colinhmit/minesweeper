@@ -39,10 +39,10 @@ class TAS:
         
 
         while True:
-            print 'reading board'
-            print (datetime.now())
+            #print 'reading board'
+            #print (datetime.now())
             (win, lose) = self.ReadBoard()
-            print (datetime.now())
+            #print (datetime.now())
 
             if win:
                 print "--- WE WON! ---"
@@ -50,17 +50,20 @@ class TAS:
             
             if lose:
                 print "--- WE LOST :( ---"
+                #break
                 self.driver.find_element_by_id("face").click()
+                self.b = board.Board(self.width, self.height)
 
-            print 'solving for move'
-            print (datetime.now())
-            (move, bombs, covered) = self.solver.GetNextMove(self.b)
-            print (datetime.now())
+            # print 'solving for move'
+            # print (datetime.now())
+            (moves, bombs, covered) = self.solver.GetNextMove(self.b)
+            # print (datetime.now())
 
-            print 'making move'
-            print (datetime.now())
-            self.make_move(move)
-            print (datetime.now())
+            # print 'making move'
+            for move in moves:
+                # print (datetime.now())
+                self.make_move(move)
+                # print (datetime.now())
 
             covered -= 1
             if covered == bombs:
@@ -68,8 +71,6 @@ class TAS:
                 break
 
     def GetBoardSize(self):
-        cells = []
-
         rows = 0
         cols = 0
         row = 1
@@ -100,6 +101,8 @@ class TAS:
         rows -= 1
         cols -= 1
 
+        self.cell_objs = [[self.driver.find_element_by_id(str(r+1)+"_"+str(c+1)) for r in range(rows)] for c in range(cols)] 
+
         return (rows, cols, num_bombs)
 
     def ReadBoard(self):
@@ -122,8 +125,7 @@ class TAS:
         return (didWin, didLose)
 
     def make_move(self, move):
-        clickID = str(move[1]+1)+"_"+str(move[0]+1)
-        self.driver.find_element_by_id(clickID).click()
+        self.cell_objs[move[0]][move[1]].click()
 
 t = TAS()
 t.Run()

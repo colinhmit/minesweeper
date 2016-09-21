@@ -29,6 +29,7 @@ class Solver:
                 if new_board[adjacent[0]][adjacent[1]] == -1:
                   new_board[adjacent[0]][adjacent[1]] = p
                 else: 
+                  #09/20/16 10:01PM changed from min
                   new_board[adjacent[0]][adjacent[1]] = min(p, new_board[adjacent[0]][adjacent[1]])
     return new_board
 
@@ -55,7 +56,7 @@ class Solver:
     p = self.BuildProbBoard(board)
 
     minMoveScore = 1
-    minMove = [0, 0]
+    minMoves = []
     isopen = False
     bombs_found = 0
     covered_cells = 0
@@ -67,13 +68,16 @@ class Solver:
           covered_cells += 1
         if p[i][j] != -1 and board.GetCell(i, j) == -1:
           isopen = True
-          if p[i][j] < minMoveScore:
+          if (p[i][j] == minMoveScore) & (minMoveScore == 0):
+            minMoves.append([i, j])
+          elif p[i][j] < minMoveScore:
             minMoveScore = p[i][j]
-            minMove = [i, j]
+            minMoves = [[i, j]]
 
     if not isopen:
-      minMove = [board.GetWidth()/2, board.GetHeight()/2]
-    return (minMove, bombs_found, covered_cells)
+      minMoves = [[board.GetWidth()/2, board.GetHeight()/2]]
+    print minMoveScore
+    return (minMoves, bombs_found, covered_cells)
 
   def Display(self, fullboard, pboard):
     spacerString = '-'*4*fullboard.GetWidth()

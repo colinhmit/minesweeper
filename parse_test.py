@@ -6,7 +6,7 @@ import cProfile
 import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from tas import TAS
+from ch_tas import TAS
 
 from datetime import datetime
 
@@ -38,27 +38,21 @@ def testparse(html,parser):
 	tree   = etree.parse(StringIO(html), parser)
 	print (datetime.now())
 
-def testparse2(html,parser):
+def testparse2(t, html,parser):
 	print (datetime.now())
 	soup = BeautifulSoup(html, "html.parser")
-	print (datetime.now())
-
-	parser = etree.HTMLParser()
-
-	print (datetime.now())
-	tree   = etree.parse(StringIO(html), parser)
-	print (datetime.now())
-
-	print 'starting_parse_test'
-
-	print (datetime.now())
 	cells = soup.findAll("div", {"class": u'square'})
 	print (datetime.now())
 
 	print (datetime.now())
+	tree   = etree.parse(StringIO(html), parser)
 	lxmlcells = tree.xpath('.//div[contains(@class, "square")]')
 	print (datetime.now())
 
-	return (cells, lxmlcells)
+	print (datetime.now())
+	drivercells = t.driver.find_elements_by_xpath('.//div[contains(@class, "square")]')
+	print (datetime.now())
+
+	return (cells, lxmlcells, drivercells)
 
 
