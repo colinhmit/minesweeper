@@ -12,6 +12,7 @@ import cProfile
 import re
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver import ActionChains
 
 from datetime import datetime
 
@@ -36,6 +37,7 @@ class TAS:
         self.parser = etree.HTMLParser()
         (self.height, self.width, unused_bombs) = self.GetBoardSize()
         self.b = board.Board(self.width, self.height)
+        self.bombLocs = []
         
 
         while True:
@@ -50,13 +52,13 @@ class TAS:
             
             if lose:
                 print "--- WE LOST :( ---"
-                #break
                 self.driver.find_element_by_id("face").click()
                 self.b = board.Board(self.width, self.height)
+                self.bombLocs = []
 
             # print 'solving for move'
             # print (datetime.now())
-            (moves, bombs, covered) = self.solver.GetNextMove(self.b)
+            (moves, bombs, covered, bombLocs) = self.solver.GetNextMove(self.b)
             # print (datetime.now())
 
             # print 'making move'
@@ -64,6 +66,10 @@ class TAS:
                 # print (datetime.now())
                 self.make_move(move)
                 # print (datetime.now())
+
+            if len(bombLocs) > len(self.bombLocs):
+                for bomb in bombLocs:
+                    self.mark_bomb(bomb)
 
             covered -= 1
             if covered == bombs:
@@ -126,6 +132,11 @@ class TAS:
 
     def make_move(self, move):
         self.cell_objs[move[0]][move[1]].click()
+
+    def mark_bomb(self, bomb):
+        if bomb not in self.bombLocs:
+            self.bombLocs.append(bomb)
+            ActionChains(self.driver).context_click(self.cell_objs[bomb[0]][bomb[1]]).perform()         
 
 t = TAS()
 t.Run()
