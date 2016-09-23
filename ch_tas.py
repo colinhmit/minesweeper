@@ -34,13 +34,41 @@ class TAS:
     def Solve(self, driver):
         self.solver = solver.Solver()
         self.parser = etree.HTMLParser()
-        (self.height, self.width, unused_bombs) = self.GetBoardSize()
+        (self.height, self.width, self.num_bombs) = self.GetBoardSize()
         self.b = board.Board(self.width, self.height)
         
+        init = True
 
         while True:
             #print 'reading board'
             #print (datetime.now())
+            while init:
+                #click corners
+                self.cell_objs[2][2].click()
+                self.cell_objs[27][2].click()
+                self.cell_objs[2][13].click()
+                self.cell_objs[27][13].click()
+
+                # self.cell_objs[5][5].click()
+                # self.cell_objs[24][5].click()
+                # self.cell_objs[5][10].click()
+                # self.cell_objs[24][10].click()
+
+                # self.cell_objs[16][8].click()
+
+                self.cell_objs[16][4].click()
+                self.cell_objs[16][12].click()
+                self.cell_objs[8][8].click()
+                self.cell_objs[20][8].click()
+                (win, lose) = self.ReadBoard()
+
+                if lose:
+                    print "--- WE LOST :( ---"
+                    self.driver.find_element_by_id("face").click()
+                    self.b = board.Board(self.width, self.height)
+                else:
+                    init = False
+
             (win, lose) = self.ReadBoard()
             #print (datetime.now())
 
@@ -53,6 +81,7 @@ class TAS:
                 #break
                 self.driver.find_element_by_id("face").click()
                 self.b = board.Board(self.width, self.height)
+                init = True
 
             # print 'solving for move'
             # print (datetime.now())
@@ -65,10 +94,9 @@ class TAS:
                 self.make_move(move)
                 # print (datetime.now())
 
-            covered -= 1
-            if covered == bombs:
-                print "DONE!"
-                break
+                covered -= 1
+                if covered == self.num_bombs:
+                    return 'Done!'
 
     def GetBoardSize(self):
         rows = 0
@@ -129,6 +157,4 @@ class TAS:
 
 t = TAS()
 t.Run()
-
-
 

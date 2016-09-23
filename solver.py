@@ -29,7 +29,6 @@ class Solver:
                 if new_board[adjacent[0]][adjacent[1]] == -1:
                   new_board[adjacent[0]][adjacent[1]] = p
                 else: 
-                  #09/20/16 10:01PM changed from min
                   new_board[adjacent[0]][adjacent[1]] = min(p, new_board[adjacent[0]][adjacent[1]])
     return new_board
 
