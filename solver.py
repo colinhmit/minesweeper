@@ -56,12 +56,14 @@ class Solver:
 
     minMoveScore = 1
     minMoves = []
+    bombLocs = []
     isopen = False
     bombs_found = 0
     covered_cells = 0
     for i in range(board.GetWidth()):
       for j in range(board.GetHeight()):
         if p[i][j] == 1:
+          bombLocs.append((i, j))
           bombs_found += 1
         if board.GetCell(i, j) == -1:
           covered_cells += 1
@@ -75,8 +77,8 @@ class Solver:
 
     if not isopen:
       minMoves = [[board.GetWidth()/2, board.GetHeight()/2]]
-    print minMoveScore
-    return (minMoves, bombs_found, covered_cells)
+    print len(bombLocs)
+    return (minMoves, bombs_found, covered_cells, bombLocs)
 
   def Display(self, fullboard, pboard):
     spacerString = '-'*4*fullboard.GetWidth()
